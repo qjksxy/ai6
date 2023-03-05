@@ -12,13 +12,15 @@ mapsize = 15
 #元素尺寸
 pixsize = 20
 #连子个数
-winSet = 5
+winSet = 6
 #空白编号
 blankcode = 0
 #白棋
 whitecode = 1
 #黑棋
 blackcode = -1
+
+TurnCounter = 0
 
 #定义画布
 canvas = tk.Canvas(top, height=mapsize * pixsize, width=mapsize * pixsize,
@@ -66,9 +68,11 @@ IsTurnWhite = True
 def Restart():
     global isGameOver
     global IsTurnWhite
+    global TurnCounter
     for child in childMap:
         canvas.delete(child)
     childMap.clear()
+    TurnCounter = 0
     isGameOver = False
     IsTurnWhite = True
     mapRecords1.clear()
@@ -225,6 +229,54 @@ PlayWithComputer = None
 AutoPlay = 0
 GetMaxScore = None
 
+# 电脑落子
+def ComputerPlay():
+    x, y, score = PlayWithComputer(IsTurnWhite)
+    return chess(x, y, score)
+
+# 游戏开始
+def startX(event):
+    global AutoPlay
+    if isGameOver:
+        print('Game over, restart!')
+        Restart()
+        return
+    # 如果是电脑自弈：
+    if AutoPlay > 0:
+        print("电脑自弈开始")
+        while AutoPlay > 0:
+            res = ComputerPlay()
+            if res != 0:
+                AutoPlay -= 1
+                Restart()
+                ComputerPlay()
+
+        print("电脑自弈完成")
+        return
+    '''
+    玩家落子时，判断接下来由谁落子：如果是电脑，则电脑进行落子，否则函数结束 
+    '''
+    # 记录当前玩家操控的棋子
+    playrole = IsTurnWhite
+    x = event.x // pixsize
+    y = event.y // pixsize
+    if x >= mapsize or y >= mapsize:
+        return
+    if whiteBoard[y][x] != blankcode:
+        return
+    score = 0
+    if PlayWithComputer != None:
+        _x, _y, score = PlayWithComputer(IsTurnWhite)
+    res = chess(x, y, score)
+    if res != 0:
+        return
+    if playrole != IsTurnWhite:
+        for i in [0, 1]:
+            ComputerPlay()
+
+
+# playChess 函数
+# 落子顺序  人--AI
 def playChess(event):
     global AutoPlay
     if isGameOver:
@@ -241,10 +293,12 @@ def playChess(event):
     if PlayWithComputer != None:
         _x, _y, score = PlayWithComputer(IsTurnWhite)
     res = chess(x, y, score)
+    # 如果没分出胜负：
     if res == 0:
         if PlayWithComputer != None:
             x, y, score = PlayWithComputer(IsTurnWhite)
             res = chess(x,y,score)
+            # AutoPlay == 0, 玩家电脑对战
             while AutoPlay > 0:
                 while res == 0:
                     x, y, score = PlayWithComputer(IsTurnWhite)
@@ -254,18 +308,11 @@ def playChess(event):
                 x, y, score = PlayWithComputer(IsTurnWhite)
                 res = chess(x,y,score)
 
-TurnCounter = 0
+
     
 def chess(x,y,score):
     global IsTurnWhite
     global TurnCounter
-
-    # 连下两子交换颜色
-    if TurnCounter < 1:
-        TurnCounter = TurnCounter + 1
-    else:
-        IsTurnWhite = not IsTurnWhite
-        TurnCounter = 0
     if isGameOver:
         if AutoPlay == 0:
             print('game is over, restart!')
@@ -300,13 +347,19 @@ def chess(x,y,score):
                                    y * pixsize + pixsize, fill='black')
 
     childMap.append(child)
+
+    # 连下两子交换颜色
+    if TurnCounter < 1:
+        TurnCounter = TurnCounter + 1
+    else:
+        IsTurnWhite = not IsTurnWhite
+        TurnCounter = 0
     return JudgementResult()
 
 #添加按钮
 def ReAutoPlay():
     global AutoPlay
     AutoPlay += 1000
- 
 btnUp = tk.Button(top, text ="自动训练加开始1000次", command = ReAutoPlay)
 btnUp.pack()
 
@@ -315,12 +368,18 @@ def AutoPlayOnce():
     if PlayWithComputer != None:
         x, y, score = PlayWithComputer(IsTurnWhite)
         chess(x,y,score)
- 
 btnAuto = tk.Button(top, text ="自动走1次", command = AutoPlayOnce)
 btnAuto.pack()
+
+# 添加按钮  -- 开始游戏
+def StartGameBtn():
+    Restart()
+startGameBtn = tk.Button(top, text="开始游戏/重新开始", command=StartGameBtn)
+startGameBtn.pack()
+
 # 画布与鼠标左键进行绑定
 #canvas.bind("<B1-Motion>", playChess)
-canvas.bind("<Button-1>", playChess)
+canvas.bind("<Button-1>", startX)
 
 #显示游戏窗口
 def ShowWind():

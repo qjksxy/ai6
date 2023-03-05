@@ -1,20 +1,19 @@
-# This is a sample Python script.
+import requests
+from bs4 import BeautifulSoup
+import urllib.request
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
-temp = 10
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
-def test(x):
-    c = temp
-    c = c + 1
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    test(0)
-    print(temp)
+    url = "https://www.bing.com/"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "html.parser")
+    image_div = soup.find("div", attrs={"id": "bgImgProgLoad"})
+    if image_div is not None:
+        image_url = image_div["data-ultra-definition-src"]
+        image_name = image_url.split("/")[-1]
+        urllib.request.urlretrieve(image_url, image_name)
+    else:
+        print("Error: Cannot find image div")
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

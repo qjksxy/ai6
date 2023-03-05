@@ -86,8 +86,8 @@ class DQN():
         return los
     '''
     def restore(self):
-        if os.path.exists('Saver/cnnsaver.ckpt-0.index'):
-            self.saver.restore(self.sess, os.path.abspath('Saver/cnnsaver.ckpt-0'))
+        if os.path.exists('Saver-old/cnnsaver.ckpt-0.index'):
+            self.saver.restore(self.sess, os.path.abspath('Saver-old/cnnsaver.ckpt-0'))
 
     #黑棋代表电脑 如果该白旗走的话 用黑白反转棋盘
     def computerPlay(self, IsTurnWhite):
@@ -153,12 +153,13 @@ class DQN():
         board2 = (board2 * (1 - step2)) + step2 * Map.blackcode
         #每步的价值 = 奖励（胜1负-1其他0） + （-0.95） * 对方棋盘能达到的最大价值（max taget Q） 
         for i in range(len(board1)):
-            if i == len(scoreR2):#白方多一步  白方赢
+            if i == len(scoreR2):# 白方多一步  白方赢
                 score1.append([1.0]) #获得1分奖励
                 if winner == 2:
                     print('error step count!')
             else:
 #                print(scoreR2[i])
+                # 此处有数组越界异常 当白棋第二手获胜时， 数组越界1位
                 score1.append([scoreR2[i][0] * -0.9])
                 #score1.append([0])
         if winner == 2:
@@ -186,9 +187,9 @@ class DQN():
             self.avg_loss = 0
             self.train_times = 0
             if Map.AutoPlay == 0:
-                self.saver.save(self.sess, os.path.abspath('Saver/cnnsaver.ckpt'), global_step = 0)
+                self.saver.save(self.sess, os.path.abspath('Saver-old/cnnsaver.ckpt'), global_step = 0)
             else:
-                self.saver.save(self.sess, os.path.abspath('Saver/cnnsaver.ckpt'), global_step = (Map.AutoPlay - 1) // 100)
+                self.saver.save(self.sess, os.path.abspath('Saver-old/cnnsaver.ckpt'), global_step =(Map.AutoPlay - 1) // 100)
     
     def PlayWithHuman(self):
         self.restore()
