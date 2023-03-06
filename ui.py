@@ -16,22 +16,8 @@ blackcode = 1       # 黑棋
 turn_counter = 0    # 保存当前为第几手
 is_game_over = False
 is_turn_black = True
-white_board = []
-black_board = []
-stepBoard = []
-row = []
-row_bak = []
 # 棋子列表
 child_map = []
-# 记录棋图
-map_records1 = []
-map_records2 = []
-# 记录棋步
-step_records1 = []
-step_records2 = []
-# 记录得分
-score_records1 = []
-score_records2 = []
 board = []
 
 # 定义画布
