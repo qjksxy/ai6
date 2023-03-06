@@ -5,24 +5,34 @@ import copy
 
 #定义窗口
 top = tk.Tk()
-top.title("魔改五子棋")
-top.geometry('900x900')
-#定义地图尺寸
-mapsize = 15
-#元素尺寸
-pixsize = 20
-#连子个数
-winSet = 6
-#空白编号
-blankcode = 0
-#白棋
-whitecode = 1
-#黑棋
-blackcode = -1
+top.title("六子棋X")
+top.geometry('1200x1200')
+mapsize = 15        # 定义地图尺寸
+pixsize = 20        # 元素尺寸
+winSet = 6          # 连子个数
+blankcode = 0       # 空白编号
+whitecode = 1       # 白棋
+blackcode = -1      # 黑棋
+turn_counter = 0    # 保存当前为第几手
+is_game_over = False
+is_turn_white = True
+win_data_set_path = 'DataSets\\win'
+los_data_set_path = 'DataSets\\los'
+train_net = None
 
-turn_counter = 0
+# 棋子列表
+child_map = []
+# 记录棋图
+map_records1 = []
+map_records2 = []
+# 记录棋步
+step_records1 = []
+step_records2 = []
+# 记录得分
+score_records1 = []
+score_records2 = []
 
-#定义画布
+# 定义画布
 canvas = tk.Canvas(top, height=mapsize * pixsize, width=mapsize * pixsize,
                  bg = "gray")
 canvas.pack(pady=10)
@@ -48,81 +58,58 @@ for i in range(mapsize):
     stepBoard.append(row)
 blackBoard = copy.deepcopy(whiteBoard)
 
-#棋子列表
-child_Map = []
-
-#记录棋图
-mapRecords1 = []
-mapRecords2 = []
-#记录棋步
-stepRecords1 = []
-stepRecords2 = []
-
-#记录得分
-scoreRecords1 = []
-scoreRecords2 = []
-
-is_game_over = False
-is_turn_white = True
-
 def restart():
     global is_game_over
     global is_turn_white
     global turn_counter
-    for child in child_Map:
+    for child in child_map:
         canvas.delete(child)
-    child_Map.clear()
+    child_map.clear()
     turn_counter = 0
     is_game_over = False
     is_turn_white = True
-    mapRecords1.clear()
-    mapRecords2.clear()
-    stepRecords1.clear()
-    stepRecords2.clear()
-    scoreRecords1.clear()
-    scoreRecords2.clear()
+    map_records1.clear()
+    map_records2.clear()
+    step_records1.clear()
+    step_records2.clear()
+    score_records1.clear()
+    score_records2.clear()
     for i in range(mapsize):
         for j in range(mapsize):
             whiteBoard[j][i] = blankcode
             blackBoard[j][i] = blankcode
 
-
-WinDataSetPath = 'DataSets\\win'
-LosDataSetPath = 'DataSets\\los'
-
-train_net = None
-
 def save_data_set(tag):
     if train_net != None:
         train_net(tag)
     else:
-        winfilename = WinDataSetPath + '\\' + time.strftime("%Y%m%d%H%M%S", time.localtime()) + '.txt'
-        losfilename = LosDataSetPath + '\\' + time.strftime("%Y%m%d%H%M%S", time.localtime()) + '.txt'
+        winfilename = win_data_set_path + '\\' + time.strftime("%Y%m%d%H%M%S", time.localtime()) + '.txt'
+        losfilename = los_data_set_path + '\\' + time.strftime("%Y%m%d%H%M%S", time.localtime()) + '.txt'
         if not os.path.exists('DataSets'):
             os.mkdir('DataSets')
-        if not os.path.exists(WinDataSetPath):
-            os.mkdir(WinDataSetPath)
-        if not os.path.exists(LosDataSetPath):
-            os.mkdir(LosDataSetPath)
+        if not os.path.exists(win_data_set_path):
+            os.mkdir(win_data_set_path)
+        if not os.path.exists(los_data_set_path):
+            os.mkdir(los_data_set_path)
         strInfo1 = ''
-        for i in range(len(mapRecords1)):
+        for i in range(len(map_records1)):
             for j in range(mapsize):
                 for k in range(mapsize):
-                    strInfo1 += str(mapRecords1[i][j][k]) + ','
+                    strInfo1 += str(map_records1[i][j][k]) + ','
             strInfo1 += '\n'
             for j in range(mapsize):
                 for k in range(mapsize):
-                    strInfo1 += str(stepRecords1[i][j][k]) + ','
+                    strInfo1 += str(step_records1[i][j][k]) + ','
             strInfo1 += '\n'
         strInfo2 = ''
-        for i in range(len(mapRecords2)):
+        for i in range(len(map_records2)):
             for j in range(mapsize):
                 for k in range(mapsize):
-                    strInfo2 += str(mapRecords2[i][j][k]) + ','
+                    strInfo2 += str(map_records2[i][j][k]) + ','
             strInfo2 += '\n'
             for j in range(mapsize):
                 for k in range(mapsize):
-                    strInfo2 += str(stepRecords2[i][j][k]) + ','
+                    strInfo2 += str(step_records2[i][j][k]) + ','
             strInfo2 += '\n'
         if tag == 1:
             with open(winfilename,"w") as f:
@@ -253,9 +240,8 @@ def start_x(event):
 
         print("电脑自弈完成")
         return
-    '''
-    玩家落子时，判断接下来由谁落子：如果是电脑，则电脑进行落子，否则函数结束 
-    '''
+
+    # 玩家落子时，判断接下来由谁落子：如果是电脑，则电脑进行落子，否则函数结束
     # 记录当前玩家操控的棋子
     playrole = is_turn_white
     x = event.x // pixsize
@@ -273,7 +259,6 @@ def start_x(event):
     if playrole != is_turn_white:
         for i in [0, 1]:
             computer_play()
-
 
 # playChess 函数
 # 落子顺序  人--AI
@@ -307,8 +292,6 @@ def play_chess(event):
                 chess(x,y,score)
                 x, y, score = play_with_computer(is_turn_white)
                 res = chess(x,y,score)
-
-
     
 def chess(x,y,score):
     global is_turn_white
@@ -326,9 +309,9 @@ def chess(x,y,score):
     step = copy.deepcopy(stepBoard)
     step[y][x] = 1
     if is_turn_white: #白棋是人工走的 如果过用来当训练集 用反转棋盘
-        mapRecords1.append(copy.deepcopy(blackBoard))
-        stepRecords1.append(step)
-        scoreRecords1.append(score)
+        map_records1.append(copy.deepcopy(blackBoard))
+        step_records1.append(step)
+        score_records1.append(score)
         whiteBoard[y][x] = whitecode #1白 -1黑
         blackBoard[y][x] = blackcode
         child = canvas.create_oval(x * pixsize,
@@ -336,9 +319,9 @@ def chess(x,y,score):
                                    x * pixsize + pixsize,  
                                    y * pixsize + pixsize, fill='white')
     else:
-        mapRecords2.append(copy.deepcopy(whiteBoard))
-        stepRecords2.append(step)
-        scoreRecords2.append(score)
+        map_records2.append(copy.deepcopy(whiteBoard))
+        step_records2.append(step)
+        score_records2.append(score)
         whiteBoard[y][x] = blackcode #1白 -1黑
         blackBoard[y][x] = whitecode
         child = canvas.create_oval(x * pixsize,
@@ -346,7 +329,7 @@ def chess(x,y,score):
                                    x * pixsize + pixsize,  
                                    y * pixsize + pixsize, fill='black')
 
-    child_Map.append(child)
+    child_map.append(child)
 
     # 连下两子交换颜色
     if turn_counter < 1:

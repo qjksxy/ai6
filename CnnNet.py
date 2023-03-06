@@ -135,12 +135,12 @@ class DQN():
     
         
     def TrainOnce(self, winner):
-        board1 = np.array(Map.mapRecords1)
-        board2 = np.array(Map.mapRecords2)
-        step1 = np.array(Map.stepRecords1)
-        step2 = np.array(Map.stepRecords2)
-        scoreR1 = np.array(Map.scoreRecords1)
-        scoreR2 = np.array(Map.scoreRecords2)
+        board1 = np.array(Map.map_records1)
+        board2 = np.array(Map.map_records2)
+        step1 = np.array(Map.step_records1)
+        step2 = np.array(Map.step_records2)
+        scoreR1 = np.array(Map.score_records1)
+        scoreR2 = np.array(Map.score_records2)
         board1 = np.reshape(board1, [-1, Map.mapsize, Map.mapsize])
         board2 = np.reshape(board2, [-1, Map.mapsize, Map.mapsize])
         step1 = np.reshape(step1, [-1, Map.mapsize, Map.mapsize])
