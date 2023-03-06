@@ -46,17 +46,17 @@ for i in range(mapsize):
 
 # 初始棋盘
 # 创建二维数组 whiteBoard 和 stepBoard, 用 0 填充
-whiteBoard = []
+white_board = []
 stepBoard = []
 for i in range(mapsize):
     row = []
-    rowBak = []
+    row_bak = []
     for j in range(mapsize):
         row.append(0)
-        rowBak.append(blankcode)
-    whiteBoard.append(rowBak)
+        row_bak.append(blankcode)
+    white_board.append(row_bak)
     stepBoard.append(row)
-blackBoard = copy.deepcopy(whiteBoard)
+black_board = copy.deepcopy(white_board)
 
 def restart():
     global is_game_over
@@ -76,8 +76,8 @@ def restart():
     score_records2.clear()
     for i in range(mapsize):
         for j in range(mapsize):
-            whiteBoard[j][i] = blankcode
-            blackBoard[j][i] = blankcode
+            white_board[j][i] = blankcode
+            black_board[j][i] = blankcode
 
 def save_data_set(tag):
     if train_net != None:
@@ -133,7 +133,7 @@ def win(tag):
 
 def JudgementPro():
     global is_game_over
-    judgemap = whiteBoard
+    judgemap = white_board
     for i in range(mapsize):
         # 判断行
         chessLen = 0
@@ -169,7 +169,7 @@ def JudgementPro():
 # 否则返回0
 def judgement_result():
     global is_game_over
-    judgemap = whiteBoard
+    judgemap = white_board
     for i in range(mapsize):
         for j in range(mapsize):
             if judgemap[j][i] != blankcode:
@@ -248,7 +248,7 @@ def start_x(event):
     y = event.y // pixsize
     if x >= mapsize or y >= mapsize:
         return
-    if whiteBoard[y][x] != blankcode:
+    if white_board[y][x] != blankcode:
         return
     score = 0
     if play_with_computer != None:
@@ -272,7 +272,7 @@ def play_chess(event):
     y = event.y // pixsize
     if x >= mapsize or y >= mapsize:
         return
-    if whiteBoard[y][x] != blankcode:
+    if white_board[y][x] != blankcode:
         return
     score = 0
     if play_with_computer != None:
@@ -301,7 +301,7 @@ def chess(x,y,score):
             print('game is over, restart!')
         restart()
         return -1
-    if whiteBoard[y][x] != blankcode:
+    if white_board[y][x] != blankcode:
         if auto_play == 0:
             print('game is over, restart!')
         restart()
@@ -309,21 +309,21 @@ def chess(x,y,score):
     step = copy.deepcopy(stepBoard)
     step[y][x] = 1
     if is_turn_white: #白棋是人工走的 如果过用来当训练集 用反转棋盘
-        map_records1.append(copy.deepcopy(blackBoard))
+        map_records1.append(copy.deepcopy(black_board))
         step_records1.append(step)
         score_records1.append(score)
-        whiteBoard[y][x] = whitecode #1白 -1黑
-        blackBoard[y][x] = blackcode
+        white_board[y][x] = whitecode #1白 -1黑
+        black_board[y][x] = blackcode
         child = canvas.create_oval(x * pixsize,
                                    y * pixsize, 
                                    x * pixsize + pixsize,  
                                    y * pixsize + pixsize, fill='white')
     else:
-        map_records2.append(copy.deepcopy(whiteBoard))
+        map_records2.append(copy.deepcopy(white_board))
         step_records2.append(step)
         score_records2.append(score)
-        whiteBoard[y][x] = blackcode #1白 -1黑
-        blackBoard[y][x] = whitecode
+        white_board[y][x] = blackcode #1白 -1黑
+        black_board[y][x] = whitecode
         child = canvas.create_oval(x * pixsize,
                                    y * pixsize, 
                                    x * pixsize + pixsize,  
