@@ -20,7 +20,7 @@ whitecode = 1
 #黑棋
 blackcode = -1
 
-TurnCounter = 0
+turn_counter = 0
 
 #定义画布
 canvas = tk.Canvas(top, height=mapsize * pixsize, width=mapsize * pixsize,
@@ -49,7 +49,7 @@ for i in range(mapsize):
 blackBoard = copy.deepcopy(whiteBoard)
 
 #棋子列表
-childMap = []
+child_Map = []
 
 #记录棋图
 mapRecords1 = []
@@ -62,19 +62,19 @@ stepRecords2 = []
 scoreRecords1 = []
 scoreRecords2 = []
 
-isGameOver = False
-IsTurnWhite = True
+is_game_over = False
+is_turn_white = True
 
-def Restart():
-    global isGameOver
-    global IsTurnWhite
-    global TurnCounter
-    for child in childMap:
+def restart():
+    global is_game_over
+    global is_turn_white
+    global turn_counter
+    for child in child_Map:
         canvas.delete(child)
-    childMap.clear()
-    TurnCounter = 0
-    isGameOver = False
-    IsTurnWhite = True
+    child_Map.clear()
+    turn_counter = 0
+    is_game_over = False
+    is_turn_white = True
     mapRecords1.clear()
     mapRecords2.clear()
     stepRecords1.clear()
@@ -90,11 +90,11 @@ def Restart():
 WinDataSetPath = 'DataSets\\win'
 LosDataSetPath = 'DataSets\\los'
 
-TrainNet = None
+train_net = None
 
-def SaveDataSet(tag):
-    if TrainNet != None:
-        TrainNet(tag)
+def save_data_set(tag):
+    if train_net != None:
+        train_net(tag)
     else:
         winfilename = WinDataSetPath + '\\' + time.strftime("%Y%m%d%H%M%S", time.localtime()) + '.txt'
         losfilename = LosDataSetPath + '\\' + time.strftime("%Y%m%d%H%M%S", time.localtime()) + '.txt'
@@ -136,16 +136,16 @@ def SaveDataSet(tag):
                 f.write(strInfo1)
 
 def win(tag):
-    global isGameOver
-    if AutoPlay == 0:
+    global is_game_over
+    if auto_play == 0:
         print(str(tag) + 'win')
         print('game over!')
-    isGameOver = True
-    SaveDataSet(tag)
+    is_game_over = True
+    save_data_set(tag)
     return tag
 
 def JudgementPro():
-    global isGameOver
+    global is_game_over
     judgemap = whiteBoard
     for i in range(mapsize):
         # 判断行
@@ -180,8 +180,8 @@ def JudgementPro():
 
 # 返回获胜方
 # 否则返回0
-def JudgementResult():
-    global isGameOver
+def judgement_result():
+    global is_game_over
     judgemap = whiteBoard
     for i in range(mapsize):
         for j in range(mapsize):
@@ -217,39 +217,39 @@ def JudgementResult():
                     if not checkrow and not checkCol and not checkLine and not checkLine2:
                         break
                 if checkrow or checkCol or checkLine or checkLine2:
-                    if AutoPlay == 0:
+                    if auto_play == 0:
                         print (str(tag) + 'win')
                         print ('game over!')
-                    isGameOver = True
-                    SaveDataSet(tag)
+                    is_game_over = True
+                    save_data_set(tag)
                     return tag
     return 0
             
-PlayWithComputer = None
-AutoPlay = 0
-GetMaxScore = None
+play_with_computer = None
+auto_play = 0
+get_max_score = None
 
 # 电脑落子
-def ComputerPlay():
-    x, y, score = PlayWithComputer(IsTurnWhite)
+def computer_play():
+    x, y, score = play_with_computer(is_turn_white)
     return chess(x, y, score)
 
 # 游戏开始
-def startX(event):
-    global AutoPlay
-    if isGameOver:
+def start_x(event):
+    global auto_play
+    if is_game_over:
         print('Game over, restart!')
-        Restart()
+        restart()
         return
     # 如果是电脑自弈：
-    if AutoPlay > 0:
+    if auto_play > 0:
         print("电脑自弈开始")
-        while AutoPlay > 0:
-            res = ComputerPlay()
+        while auto_play > 0:
+            res = computer_play()
             if res != 0:
-                AutoPlay -= 1
-                Restart()
-                ComputerPlay()
+                auto_play -= 1
+                restart()
+                computer_play()
 
         print("电脑自弈完成")
         return
@@ -257,7 +257,7 @@ def startX(event):
     玩家落子时，判断接下来由谁落子：如果是电脑，则电脑进行落子，否则函数结束 
     '''
     # 记录当前玩家操控的棋子
-    playrole = IsTurnWhite
+    playrole = is_turn_white
     x = event.x // pixsize
     y = event.y // pixsize
     if x >= mapsize or y >= mapsize:
@@ -265,23 +265,23 @@ def startX(event):
     if whiteBoard[y][x] != blankcode:
         return
     score = 0
-    if PlayWithComputer != None:
-        _x, _y, score = PlayWithComputer(IsTurnWhite)
+    if play_with_computer != None:
+        _x, _y, score = play_with_computer(is_turn_white)
     res = chess(x, y, score)
     if res != 0:
         return
-    if playrole != IsTurnWhite:
+    if playrole != is_turn_white:
         for i in [0, 1]:
-            ComputerPlay()
+            computer_play()
 
 
 # playChess 函数
 # 落子顺序  人--AI
-def playChess(event):
-    global AutoPlay
-    if isGameOver:
+def play_chess(event):
+    global auto_play
+    if is_game_over:
         print('Game over, restart!')
-        Restart()
+        restart()
         return 
     x = event.x // pixsize
     y = event.y // pixsize
@@ -290,42 +290,42 @@ def playChess(event):
     if whiteBoard[y][x] != blankcode:
         return
     score = 0
-    if PlayWithComputer != None:
-        _x, _y, score = PlayWithComputer(IsTurnWhite)
+    if play_with_computer != None:
+        _x, _y, score = play_with_computer(is_turn_white)
     res = chess(x, y, score)
     # 如果没分出胜负：
     if res == 0:
-        if PlayWithComputer != None:
-            x, y, score = PlayWithComputer(IsTurnWhite)
+        if play_with_computer != None:
+            x, y, score = play_with_computer(is_turn_white)
             res = chess(x,y,score)
             # AutoPlay == 0, 玩家电脑对战
-            while AutoPlay > 0:
+            while auto_play > 0:
                 while res == 0:
-                    x, y, score = PlayWithComputer(IsTurnWhite)
+                    x, y, score = play_with_computer(is_turn_white)
                     res = chess(x,y,score)
-                AutoPlay -= 1
+                auto_play -= 1
                 chess(x,y,score)
-                x, y, score = PlayWithComputer(IsTurnWhite)
+                x, y, score = play_with_computer(is_turn_white)
                 res = chess(x,y,score)
 
 
     
 def chess(x,y,score):
-    global IsTurnWhite
-    global TurnCounter
-    if isGameOver:
-        if AutoPlay == 0:
+    global is_turn_white
+    global turn_counter
+    if is_game_over:
+        if auto_play == 0:
             print('game is over, restart!')
-        Restart()
+        restart()
         return -1
     if whiteBoard[y][x] != blankcode:
-        if AutoPlay == 0:
+        if auto_play == 0:
             print('game is over, restart!')
-        Restart()
+        restart()
         return -1    
     step = copy.deepcopy(stepBoard)
     step[y][x] = 1
-    if IsTurnWhite: #白棋是人工走的 如果过用来当训练集 用反转棋盘
+    if is_turn_white: #白棋是人工走的 如果过用来当训练集 用反转棋盘
         mapRecords1.append(copy.deepcopy(blackBoard))
         stepRecords1.append(step)
         scoreRecords1.append(score)
@@ -346,41 +346,41 @@ def chess(x,y,score):
                                    x * pixsize + pixsize,  
                                    y * pixsize + pixsize, fill='black')
 
-    childMap.append(child)
+    child_Map.append(child)
 
     # 连下两子交换颜色
-    if TurnCounter < 1:
-        TurnCounter = TurnCounter + 1
+    if turn_counter < 1:
+        turn_counter = turn_counter + 1
     else:
-        IsTurnWhite = not IsTurnWhite
-        TurnCounter = 0
-    return JudgementResult()
+        is_turn_white = not is_turn_white
+        turn_counter = 0
+    return judgement_result()
 
 #添加按钮
-def ReAutoPlay():
-    global AutoPlay
-    AutoPlay += 1000
-btnUp = tk.Button(top, text ="自动训练加开始1000次", command = ReAutoPlay)
+def re_auto_play():
+    global auto_play
+    auto_play += 5000
+btnUp = tk.Button(top, text ="自动训练加开始1000次", command = re_auto_play)
 btnUp.pack()
 
 #添加按钮
-def AutoPlayOnce():
-    if PlayWithComputer != None:
-        x, y, score = PlayWithComputer(IsTurnWhite)
+def auto_play_once():
+    if play_with_computer != None:
+        x, y, score = play_with_computer(is_turn_white)
         chess(x,y,score)
-btnAuto = tk.Button(top, text ="自动走1次", command = AutoPlayOnce)
+btnAuto = tk.Button(top, text ="自动走1次", command = auto_play_once)
 btnAuto.pack()
 
 # 添加按钮  -- 开始游戏
-def StartGameBtn():
-    Restart()
-startGameBtn = tk.Button(top, text="开始游戏/重新开始", command=StartGameBtn)
+def start_game_btn():
+    restart()
+startGameBtn = tk.Button(top, text="开始游戏/重新开始", command=start_game_btn)
 startGameBtn.pack()
 
 # 画布与鼠标左键进行绑定
 #canvas.bind("<B1-Motion>", playChess)
-canvas.bind("<Button-1>", startX)
+canvas.bind("<Button-1>", start_x)
 
 #显示游戏窗口
-def ShowWind():
+def show_windows():
     top.mainloop()

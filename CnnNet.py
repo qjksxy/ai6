@@ -126,7 +126,7 @@ class DQN():
 #        print(boards)
 #        print(nextStep)
         rdm = random.randint(0, 100)
-        if Map.AutoPlay > 0 and rdm > 95:
+        if Map.auto_play > 0 and rdm > 95:
             step = random.randint(0, len(positions) - 1)
             maxx = positions[step][0]
             maxy = positions[step][1]
@@ -160,7 +160,7 @@ class DQN():
             else:
 #                print(scoreR2[i])
                 # 此处有数组越界异常 当白棋第二手获胜时， 数组越界1位
-                score1.append([scoreR2[i][0] * -0.9])
+                score1.append([scoreR2[i-2][0] * -0.9])
                 #score1.append([0])
         if winner == 2:
             #惩罚败方的最后一步
@@ -182,20 +182,20 @@ class DQN():
             
         self.avg_loss += totalLoss
         self.train_times += 1
-        if Map.AutoPlay % 100 == 0:
-            print('train avg loss ' + str(self.avg_loss / self.train_times) + ' has times ' + str(Map.AutoPlay))
+        if Map.auto_play % 100 == 0:
+            print('train avg loss ' + str(self.avg_loss / self.train_times) + ' has times ' + str(Map.auto_play))
             self.avg_loss = 0
             self.train_times = 0
-            if Map.AutoPlay == 0:
+            if Map.auto_play == 0:
                 self.saver.save(self.sess, os.path.abspath('Saver-old/cnnsaver.ckpt'), global_step = 0)
             else:
-                self.saver.save(self.sess, os.path.abspath('Saver-old/cnnsaver.ckpt'), global_step =(Map.AutoPlay - 1) // 100)
+                self.saver.save(self.sess, os.path.abspath('Saver-old/cnnsaver.ckpt'), global_step =(Map.auto_play - 1) // 100)
     
     def PlayWithHuman(self):
         self.restore()
-        Map.PlayWithComputer = self.computerPlay
-        Map.TrainNet = self.TrainOnce
-        Map.ShowWind()
+        Map.play_with_computer = self.computerPlay
+        Map.train_net = self.TrainOnce
+        Map.show_windows()
         
 if __name__ == '__main__':
     dqn = DQN()
