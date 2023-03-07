@@ -72,7 +72,6 @@ def touch_canvas(event):
     if x >= mapsize or y >= mapsize or get_board(x, y) != blankcode:
         return
     res = chess(x, y, 0)
-    print(res)
 
 
 def chess(x, y, score):
@@ -120,9 +119,7 @@ def judge_result(x, y):
     curr_col = blankcode
     for i in range(11):
         col = get_board_safe(x, y - 5 + i)
-        # print('i='+str(i) + '  col='+str(col))
         if col != blankcode and col == curr_col:
-#            print('len:' + str(len))
             len += 1
             if len >= 6:
                 return win(col)
