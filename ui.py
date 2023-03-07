@@ -2,6 +2,7 @@ import tkinter as tk
 import os
 import time
 import copy
+import random
 
 #定义窗口
 top = tk.Tk()
@@ -36,6 +37,12 @@ def canvas_init():
 def get_board(x, y):
     return board[y * mapsize + x]
 
+def get_board_safe(x, y):
+    if x < 0 or y < 0 or x >= mapsize or y >= mapsize:
+        return blankcode
+    else:
+        return get_board(x, y)
+
 def set_board(x, y, value):
     global board
     board[y * mapsize + x] = value
@@ -64,7 +71,9 @@ def touch_canvas(event):
     y = event.y // pixsize
     if x >= mapsize or y >= mapsize or get_board(x, y) != blankcode:
         return
-    chess(x, y, 0)
+    res = chess(x, y, 0)
+    print(res)
+
 
 def chess(x, y, score):
     global is_turn_black
@@ -88,7 +97,39 @@ def chess(x, y, score):
     else:
         is_turn_black = not is_turn_black
         turn_counter = 0
-    # return judge_result()
+    return judge_result(x, y)
+
+def win(flag):
+    print("-----Game end-----")
+    print(str(flag) + 'wins')
+    return flag
+
+def judge_result(x, y):
+    len = 0
+    curr_col = blankcode
+    for i in range(11):
+        col = get_board_safe(x - 5 + i, y)
+        if col != blankcode and col == curr_col:
+            len += 1
+            if len >= 6:
+                return win(col)
+        if col != curr_col:
+            len = 1
+            curr_col = col
+    len = 0
+    curr_col = blankcode
+    for i in range(11):
+        col = get_board_safe(x, y - 5 + i)
+        # print('i='+str(i) + '  col='+str(col))
+        if col != blankcode and col == curr_col:
+#            print('len:' + str(len))
+            len += 1
+            if len >= 6:
+                return win(col)
+        if col != curr_col:
+            len = 1
+            curr_col = col
+    return 0
 
 #添加按钮
 def re_auto_play():
@@ -98,12 +139,17 @@ btnUp = tk.Button(top, text ="自动训练加开始10次", command = re_auto_pla
 btnUp.pack()
 
 #添加按钮
-# def auto_play_once():
-#     if play_with_computer != None:
-#         x, y, score = play_with_computer(is_turn_white)
-#         chess(x,y,score)
-# btnAuto = tk.Button(top, text ="自动走1次", command = auto_play_once)
-# btnAuto.pack()
+def auto_play_once_btn():
+    i = 0
+    res = -1
+    while i < 20 and res == -1:
+        x = random.randint(0, mapsize - 1)
+        y = random.randint(0, mapsize - 1)
+        res = chess(x, y, 0)
+        i += 1
+
+btnAuto = tk.Button(top, text ="自动走1次", command = auto_play_once_btn)
+btnAuto.pack()
 
 # 添加按钮  -- 开始游戏
 def start_game_btn():
