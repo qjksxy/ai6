@@ -9,7 +9,7 @@ top = tk.Tk()
 top.title("六子棋X")
 top.geometry('1200x1200')
 mapsize = 15        # 定义地图尺寸
-pixsize = 30        # 元素尺寸
+pixsize = 30        # 像素尺寸
 win_set = 6         # 连子个数
 blankcode = 0       # 空白编号
 whitecode = -1      # 白棋
@@ -20,7 +20,6 @@ is_turn_black = True
 # 棋子列表
 child_map = []
 board = []
-
 # 定义画布
 canvas = tk.Canvas(top, height=mapsize * pixsize, width=mapsize * pixsize, bg = "gray")
 
@@ -122,6 +121,28 @@ def judge_result(x, y):
     curr_col = blankcode
     for i in range(11):
         col = get_board_safe(x, y - 5 + i)
+        if col != blankcode and col == curr_col:
+            len += 1
+            if len >= 6:
+                return win(col)
+        if col != curr_col:
+            len = 1
+            curr_col = col
+    len = 0
+    curr_col = blankcode
+    for i in range(11):
+        col = get_board_safe(x - 5 + i, y - 5 + i)
+        if col != blankcode and col == curr_col:
+            len += 1
+            if len >= 6:
+                return win(col)
+        if col != curr_col:
+            len = 1
+            curr_col = col
+    len = 0
+    curr_col = blankcode
+    for i in range(11):
+        col = get_board_safe(x + 5 - i, y - 5 + i)
         if col != blankcode and col == curr_col:
             len += 1
             if len >= 6:
