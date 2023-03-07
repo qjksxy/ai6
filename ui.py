@@ -33,6 +33,10 @@ def canvas_init():
     for i in range(mapsize * mapsize):
         board.append(blankcode)
     restart()
+    add_btn('自动训练', re_auto_play)
+    add_btn('自动走1次', auto_play_once_btn)
+    add_btn('开始游戏/重新开始', start_game_btn)
+    canvas.bind("<Button-1>", touch_canvas)
 
 def get_board(x, y):
     return board[y * mapsize + x]
@@ -72,7 +76,6 @@ def touch_canvas(event):
     if x >= mapsize or y >= mapsize or get_board(x, y) != blankcode:
         return
     res = chess(x, y, 0)
-
 
 def chess(x, y, score):
     global is_turn_black
@@ -132,8 +135,6 @@ def judge_result(x, y):
 def re_auto_play():
     global auto_play
     auto_play += 10
-btnUp = tk.Button(top, text ="自动训练加开始10次", command = re_auto_play)
-btnUp.pack()
 
 #添加按钮
 def auto_play_once_btn():
@@ -145,21 +146,18 @@ def auto_play_once_btn():
         res = chess(x, y, 0)
         i += 1
 
-btnAuto = tk.Button(top, text ="自动走1次", command = auto_play_once_btn)
-btnAuto.pack()
-
 # 添加按钮  -- 开始游戏
 def start_game_btn():
     restart()
     pass
-startGameBtn = tk.Button(top, text="开始游戏/重新开始", command=start_game_btn)
-startGameBtn.pack()
-
-canvas.bind("<Button-1>", touch_canvas)
 
 #显示游戏窗口
 def show_windows():
     top.mainloop()
+
+def add_btn(_text, _command):
+    button = tk.Button(top, text=_text, command=_command)
+    button.pack()
 
 if __name__ == '__main__':
     canvas_init()
