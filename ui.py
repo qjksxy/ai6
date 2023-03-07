@@ -16,6 +16,10 @@ NOT_WIN = 0
 BLACK_WIN = 1
 WHITE_WIN = -1
 DRAW = 2
+CHESSABLE = 1
+NOCHESSABLE = 0
+SUCCESS = 1
+ERROR = 0
 
 # 定义窗口
 top = tk.Tk()
@@ -28,6 +32,7 @@ chesses_count = 0
 # 棋子列表
 child_map = []
 board = []
+chessable = []
 # 定义画布
 canvas = tk.Canvas(top, height=MAP_SIZE * PIX_SIZE, width=MAP_SIZE * PIX_SIZE, bg ="gray")
 
@@ -39,6 +44,7 @@ def canvas_init():
         canvas.create_line(0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, i * PIX_SIZE, fill='black')
     for i in range(MAP_SIZE * MAP_SIZE):
         board.append(BLANK_CODE)
+        chessable.append(NOCHESSABLE)
     restart()
     add_btn('自动训练', re_auto_play)
     add_btn('自动走1次', auto_play_once_btn)
@@ -57,6 +63,22 @@ def get_board_safe(x, y):
 def set_board(x, y, value):
     global board
     board[y * MAP_SIZE + x] = value
+
+def set_chessable(x, y):
+    global chessable
+    for i in range(5):
+        for j in range(5):
+            _x = x - 2 + i
+            _y = y - 2 + j
+            if _x < 0 or _y < 0 or _x >= MAP_SIZE or _y >= MAP_SIZE:
+                continue
+            chessable[_y * MAP_SIZE + _x] = CHESSABLE
+    chessable[y * MAP_SIZE + x] = NOCHESSABLE
+
+def get_chessable(x, y):
+    if x < 0 or y < 0 or x >= MAP_SIZE or y >= MAP_SIZE:
+        return NOCHESSABLE
+    return chessable[y * MAP_SIZE + x]
 
 def restart():
     global game_is_over, is_turn_black, turn_counter, chesses_count
@@ -100,6 +122,7 @@ def chess(x, y, score):
                                y * PIX_SIZE + PIX_SIZE, fill=fill_color)
     child_map.append(child)
     chesses_count += 1
+    set_chessable(x, y)
     # 连下两子交换颜色
     if turn_counter < 1:
         turn_counter = turn_counter + 1
@@ -189,13 +212,18 @@ def auto_play_once_btn():
     while i < 20 and res == CANT_CHESS:
         x = random.randint(0, MAP_SIZE - 1)
         y = random.randint(0, MAP_SIZE - 1)
+        if get_chessable(x, y) == NOCHESSABLE:
+            continue
         res = chess(x, y, 0)
         i += 1
+    if res == CANT_CHESS:
+        return ERROR
+    else:
+        return SUCCESS
 
 # 添加按钮  -- 开始游戏
 def start_game_btn():
     restart()
-    pass
 
 # 显示游戏窗口
 def show_windows():
