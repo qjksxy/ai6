@@ -14,7 +14,7 @@ blankcode = 0       # 空白编号
 whitecode = 1       # 白棋
 blackcode = -1      # 黑棋
 turn_counter = 0    # 保存当前为第几手
-is_game_over = False
+game_is_over = False
 is_turn_white = True
 win_data_set_path = 'DataSets\\win'
 los_data_set_path = 'DataSets\\los'
@@ -59,7 +59,7 @@ for i in range(mapsize):
 black_board = copy.deepcopy(white_board)
 
 def restart():
-    global is_game_over
+    global game_is_over
     global is_turn_white
     global turn_counter
     for child in child_map:
@@ -123,7 +123,7 @@ def save_data_set(tag):
                 f.write(strInfo1)
 
 def win(tag):
-    global is_game_over
+    global game_is_over
     if auto_play == 0:
         print(str(tag) + 'win')
         print('game over!')
@@ -132,7 +132,7 @@ def win(tag):
     return tag
 
 def JudgementPro():
-    global is_game_over
+    global game_is_over
     judgemap = white_board
     for i in range(mapsize):
         # 判断行
@@ -168,7 +168,7 @@ def JudgementPro():
 # 返回获胜方
 # 否则返回0
 def judgement_result():
-    global is_game_over
+    global game_is_over
     judgemap = white_board
     for i in range(mapsize):
         for j in range(mapsize):
@@ -224,7 +224,7 @@ def computer_play():
 # 游戏开始
 def start_x(event):
     global auto_play
-    if is_game_over:
+    if game_is_over:
         print('Game over, restart!')
         restart()
         return
@@ -264,7 +264,7 @@ def start_x(event):
 # 落子顺序  人--AI
 def play_chess(event):
     global auto_play
-    if is_game_over:
+    if game_is_over:
         print('Game over, restart!')
         restart()
         return 
@@ -296,7 +296,7 @@ def play_chess(event):
 def chess(x,y,score):
     global is_turn_white
     global turn_counter
-    if is_game_over:
+    if game_is_over:
         if auto_play == 0:
             print('game is over, restart!')
         restart()
