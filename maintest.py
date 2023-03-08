@@ -1,3 +1,5 @@
+import ui
+
 class Action:
     def __init__(self):
         self.x = 1
@@ -12,6 +14,10 @@ def _equals1(x):
 
 def step(action):
     return action.x, action.y
+
+def test():
+    pass
+
 
 if __name__ == '__main__':
     action = Action()

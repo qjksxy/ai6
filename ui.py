@@ -11,7 +11,7 @@ WIN_SET = 6         # 连子个数
 BLANK = 0           # 空白编号
 WHITE = -1          # 白棋
 BLACK = 1           # 黑棋
-CANT_CHESS = -10    # 无法在指定位置落子
+CANT_CHESS = -10    # 发生错误：落子失败
 NOT_WIN = 0
 BLACK_WIN = 1
 WHITE_WIN = -1
@@ -20,6 +20,15 @@ CHESSABLE = 1
 NOCHESSABLE = 0
 SUCCESS = 1
 ERROR = 0
+# 奖励分数
+SING4 = 1
+SING5 = 1
+DOUB2 = 1
+DOUB3 = 1
+DOUB4 = 1
+DOUB5 = 1
+CONN6 = 1
+
 
 # 定义窗口
 top = tk.Tk()
@@ -107,7 +116,7 @@ def touch_canvas(event):
     y = event.y // PIX_SIZE
     if x >= MAP_SIZE or y >= MAP_SIZE or get_board(x, y) != BLANK:
         return
-    res = chess(x, y, 0)
+    chess(x, y, 0)
 
 def chess(x, y, score):
     global is_turn_black, chesses_count
@@ -213,9 +222,163 @@ def get_state():
     me.extend(chessable)
     return me
 
-def reward(camp):
+def check_reward(chess_list):
     return 0
 
+def reward(camp):
+    player1 = camp
+    player2 = 1 - camp
+    board1 = []
+    board2 = []
+    reward = 0
+    if camp == WHITE:
+        board1 = [-1 * x for x in board]
+        board2 = board
+        player2 = BLACK
+    else:
+        board1 = board
+        board2 = [-1 * x for x in board]
+        player2 = WHITE
+    # 分片
+    head = -1
+    tail = -1
+    # 检查所有横行
+    for j in range(MAP_SIZE):
+        for i in range(MAP_SIZE):
+            if get_board(j, i) == player2:
+                tail = i
+                if tail - head + 1 < WIN_SET:
+                    head = tail
+                    continue
+                else:
+                    # 从 board[j][head] 到 board[j][tail] 检查奖励布局
+                    l = []
+                    for m in range(head+1, tail-1):
+                        l.append(get_board(j, m) * player1)
+                    reward += check_reward(l)
+        if MAP_SIZE - tail + 1 < WIN_SET:
+            continue
+        else:
+            # 从 board[j][tail] 到 board[j][MAP_SIZE] 检查奖励布局
+            l = []
+            for m in range(tail + 1, MAP_SIZE - 1):
+                l.append(get_board(j, m) * player1)
+            reward += check_reward(l)
+    # 检查所有竖列
+    head, tail = -1, -1
+    for j in range(MAP_SIZE):
+        for i in range(MAP_SIZE):
+            if get_board(i, j) == player2:
+                tail = i
+                if tail - head + 1 < WIN_SET:
+                    head = tail
+                    continue
+                else:
+                    # 从 board[head][j] 到 board[tail][j] 检查奖励布局
+                    l = []
+                    for m in range(head+1, tail-1):
+                        l.append(get_board(m, j) * player1)
+                    reward += check_reward(l)
+        if MAP_SIZE - tail + 1 < WIN_SET:
+            continue
+        else:
+            # 从 board[tail][j] 到 board[MAP_SIZE][j] 检查奖励布局
+            l = []
+            for m in range(tail + 1, MAP_SIZE - 1):
+                l.append(get_board(m, j) * player1)
+            reward += check_reward(l)
+    # 检查所有左上-右下斜线
+    # 右上部分棋盘
+    head, tail = -1, -1
+    for j in range(MAP_SIZE):
+        for i in range(MAP_SIZE - j):
+            if get_board(j + i, i) == player2:
+                tail = i
+                if tail - head + 1 < WIN_SET:
+                    head = tail
+                    continue
+                else:
+                    # 从 board[j][head] 到 board[j][tail] 检查奖励布局
+                    l = []
+                    for m in range(head + 1, tail - 1):
+                        l.append(get_board(j + m, m) * player1)
+                    reward += check_reward(l)
+        if MAP_SIZE - j - tail + 1 < WIN_SET:
+            continue
+        else:
+            l = []
+            for m in range(tail + 1, MAP_SIZE - 1):
+                l.append(get_board(j + m, m) * player1)
+            reward += check_reward(l)
+    # 检查左下部分棋盘
+    head, tail = -1, -1
+    for j in range(MAP_SIZE):
+        for i in range(MAP_SIZE - j):
+            if get_board(i, j + i) == player2:
+                tail = i
+                if tail - head + 1 < WIN_SET:
+                    head = tail
+                    continue
+                else:
+                    # 从 board[j][head] 到 board[j][tail] 检查奖励布局
+                    l = []
+                    for m in range(head + 1, tail - 1):
+                        l.append(get_board(m, j + m) * player1)
+                    reward += check_reward(l)
+        if MAP_SIZE - j - tail + 1 < WIN_SET:
+            continue
+        else:
+            l = []
+            for m in range(tail + 1, MAP_SIZE - 1):
+                l.append(get_board(m, j + m) * player1)
+            reward += check_reward(l)
+    # 检查所有右上-左下斜线
+    # 检查左上部分棋盘
+    head, tail = -1, -1
+    for j in range(MAP_SIZE):
+        for i in range(j + 1):
+            if get_board(j - i, i) == player2:
+                tail = i
+                if tail - head + 1 < WIN_SET:
+                    head = tail
+                    continue
+                else:
+                    # 从 board[j][head] 到 board[j][tail] 检查奖励布局
+                    l = []
+                    for m in range(head + 1, tail - 1):
+                        l.append(get_board(j - m, m) * player1)
+                    reward += check_reward(l)
+        if MAP_SIZE - j - tail + 1 < WIN_SET:
+            continue
+        else:
+            l = []
+            for m in range(tail + 1, MAP_SIZE - 1):
+                l.append(get_board(j - m, m) * player1)
+            reward += check_reward(l)
+    # 检查右下部分棋盘
+    head, tail = -1, -1
+    for j in range(MAP_SIZE):
+        for i in range(MAP_SIZE - j):
+            if get_board(MAP_SIZE - i - 1, j + i) == player2:
+                tail = i
+                if tail - head + 1 < WIN_SET:
+                    head = tail
+                    continue
+                else:
+                    # 从 board[j][head] 到 board[j][tail] 检查奖励布局
+                    l = []
+                    for m in range(head + 1, tail - 1):
+                        l.append(get_board(MAP_SIZE - m - 1, j + m) * player1)
+                    reward += check_reward(l)
+        if MAP_SIZE - j - tail + 1 < WIN_SET:
+            continue
+        else:
+            l = []
+            for m in range(tail + 1, MAP_SIZE - 1):
+                l.append(get_board(MAP_SIZE - m - 1, j + m) * player1)
+            reward += check_reward(l)
+
+    return reward
 
 def computer_step(x, y, camp):
     # param:
@@ -258,6 +421,8 @@ def start_game_btn():
 
 # 显示游戏窗口
 def show_windows():
+    if no_gui:
+        return
     top.mainloop()
 
 def add_btn(_text, _command):
