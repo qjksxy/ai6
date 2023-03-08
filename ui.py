@@ -8,9 +8,9 @@ import random
 MAP_SIZE = 15       # 定义地图尺寸
 PIX_SIZE = 30       # 像素尺寸
 WIN_SET = 6         # 连子个数
-BLANK_CODE = 0      # 空白编号
-WHITE_CODE = -1     # 白棋
-BLACK_CODE = 1      # 黑棋
+BLANK = 0           # 空白编号
+WHITE = -1          # 白棋
+BLACK = 1           # 黑棋
 CANT_CHESS = -10    # 无法在指定位置落子
 NOT_WIN = 0
 BLACK_WIN = 1
@@ -33,17 +33,20 @@ chesses_count = 0
 child_map = []
 board = []
 chessable = []
+# 设置是否显示图形界面
+no_gui = True
 # 定义画布
 canvas = tk.Canvas(top, height=MAP_SIZE * PIX_SIZE, width=MAP_SIZE * PIX_SIZE, bg ="gray")
 
 def canvas_init():
-    global canvas
+    global canvas, no_gui
+    no_gui = False
     canvas.pack(pady=10)
     for i in range(MAP_SIZE):
         canvas.create_line(i * PIX_SIZE, 0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, fill='black')
         canvas.create_line(0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, i * PIX_SIZE, fill='black')
     for i in range(MAP_SIZE * MAP_SIZE):
-        board.append(BLANK_CODE)
+        board.append(BLANK)
         chessable.append(NOCHESSABLE)
     restart()
     add_btn('自动训练', re_auto_play)
@@ -56,7 +59,7 @@ def get_board(x, y):
 
 def get_board_safe(x, y):
     if x < 0 or y < 0 or x >= MAP_SIZE or y >= MAP_SIZE:
-        return BLANK_CODE
+        return BLANK
     else:
         return get_board(x, y)
 
@@ -82,15 +85,16 @@ def get_chessable(x, y):
 
 def restart():
     global game_is_over, is_turn_black, turn_counter, chesses_count
-    for child in child_map:
-        canvas.delete(child)
+    if not no_gui:
+        for child in child_map:
+            canvas.delete(child)
     child_map.clear()
     chesses_count = 0
     turn_counter = 0
     game_is_over = False
     is_turn_black = True
     for i in range(MAP_SIZE * MAP_SIZE):
-        board[i] = BLANK_CODE
+        board[i] = BLANK
     # 下第一子
     chess(MAP_SIZE // 2, MAP_SIZE // 2, 0)
     is_turn_black = False
@@ -101,26 +105,27 @@ def touch_canvas(event):
     # 获取 x y 坐标
     x = event.x // PIX_SIZE
     y = event.y // PIX_SIZE
-    if x >= MAP_SIZE or y >= MAP_SIZE or get_board(x, y) != BLANK_CODE:
+    if x >= MAP_SIZE or y >= MAP_SIZE or get_board(x, y) != BLANK:
         return
     res = chess(x, y, 0)
 
 def chess(x, y, score):
     global is_turn_black, chesses_count
     global turn_counter
-    if game_is_over or get_board(x, y) != BLANK_CODE:
+    if game_is_over or get_board(x, y) != BLANK:
         return CANT_CHESS
     if is_turn_black:
         fill_color = 'black'
-        set_board(x, y, BLACK_CODE)
+        set_board(x, y, BLACK)
     else:
         fill_color = 'white'
-        set_board(x, y, WHITE_CODE)
-    child = canvas.create_oval(x * PIX_SIZE,
-                               y * PIX_SIZE,
-                               x * PIX_SIZE + PIX_SIZE,
-                               y * PIX_SIZE + PIX_SIZE, fill=fill_color)
-    child_map.append(child)
+        set_board(x, y, WHITE)
+    if not no_gui:
+        child = canvas.create_oval(x * PIX_SIZE,
+                                   y * PIX_SIZE,
+                                   x * PIX_SIZE + PIX_SIZE,
+                                   y * PIX_SIZE + PIX_SIZE, fill=fill_color)
+        child_map.append(child)
     chesses_count += 1
     set_chessable(x, y)
     # 连下两子交换颜色
@@ -150,10 +155,10 @@ def judge_result(x, y):
     if chesses_count == MAP_SIZE * MAP_SIZE:
         return win(DRAW)
     len = 0
-    curr_col = BLANK_CODE
+    curr_col = BLANK
     for i in range(11):
         col = get_board_safe(x - 5 + i, y)
-        if col != BLANK_CODE and col == curr_col:
+        if col != BLANK and col == curr_col:
             len += 1
             if len >= 6:
                 return win(col)
@@ -161,10 +166,10 @@ def judge_result(x, y):
             len = 1
             curr_col = col
     len = 0
-    curr_col = BLANK_CODE
+    curr_col = BLANK
     for i in range(11):
         col = get_board_safe(x, y - 5 + i)
-        if col != BLANK_CODE and col == curr_col:
+        if col != BLANK and col == curr_col:
             len += 1
             if len >= 6:
                 return win(col)
@@ -172,10 +177,10 @@ def judge_result(x, y):
             len = 1
             curr_col = col
     len = 0
-    curr_col = BLANK_CODE
+    curr_col = BLANK
     for i in range(11):
         col = get_board_safe(x - 5 + i, y - 5 + i)
-        if col != BLANK_CODE and col == curr_col:
+        if col != BLANK and col == curr_col:
             len += 1
             if len >= 6:
                 return win(col)
@@ -183,10 +188,10 @@ def judge_result(x, y):
             len = 1
             curr_col = col
     len = 0
-    curr_col = BLANK_CODE
+    curr_col = BLANK
     for i in range(11):
         col = get_board_safe(x + 5 - i, y - 5 + i)
-        if col != BLANK_CODE and col == curr_col:
+        if col != BLANK and col == curr_col:
             len += 1
             if len >= 6:
                 return win(col)
@@ -194,6 +199,32 @@ def judge_result(x, y):
             len = 1
             curr_col = col
     return 0
+
+def _equals1(x):
+    if x == 1:
+        return 1
+    else:
+        return 0
+
+def get_state():
+    me = [_equals1(x) for x in board]
+    co = [_equals1(-1 * x) for x in board]
+    me.extend(co)
+    me.extend(chessable)
+    return me
+
+def reward(camp):
+    return 0
+
+
+def computer_step(x, y, camp):
+    # param:
+    # - x, y: 落子位置;
+    # - camp: 阵营
+    #   - 1 WHITE
+    # return next_state, reward, done
+    chess(x, y, 0)
+    return get_state(), reward(camp), game_is_over
 
 # 添加按钮
 def re_auto_play():
