@@ -223,21 +223,42 @@ def get_state():
     return me
 
 def check_reward(chess_list):
-    return 0
+    rew = 0
+    l = len(chess_list)
+    head, tail = 0, l
+    for i in range(l):
+        if chess_list[i] == BLANK:
+            head = i
+            break
+    for i in range(l):
+        if chess_list[l - 1 - i] == BLANK:
+            tail = i
+            break
+    if head == 4:
+        rew += SING4
+    if head == 5:
+        rew += SING5
+    if tail == 4:
+        rew += SING4
+    if tail == 5:
+        rew += SING5
+    tail = l - 1 - tail
+    if head < tail:
+        count = 0
+        for i in range(head, tail):
+            if chess_list[i] == 1:
+                count += 1
+            if chess_list[i] == BLANK:
+                pass
+    return rew
 
 def reward(camp):
     player1 = camp
     player2 = 1 - camp
-    board1 = []
-    board2 = []
     reward = 0
     if camp == WHITE:
-        board1 = [-1 * x for x in board]
-        board2 = board
         player2 = BLACK
     else:
-        board1 = board
-        board2 = [-1 * x for x in board]
         player2 = WHITE
     # 分片
     head = -1
@@ -387,7 +408,11 @@ def computer_step(x, y, camp):
     #   - 1 WHITE
     # return next_state, reward, done
     chess(x, y, 0)
-    return get_state(), reward(camp), game_is_over
+    if camp == BLACK:
+        c = WHITE
+    else:
+        c = BLACK
+    return get_state(), reward(camp)-reward(c), game_is_over
 
 # 添加按钮
 def re_auto_play():

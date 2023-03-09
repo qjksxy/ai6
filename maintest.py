@@ -20,13 +20,14 @@ def test():
 
 
 if __name__ == '__main__':
-    action = Action()
-    action.x = 10
-    action.y = 20
-    x, y = step(action)
-    print(x, y)
-    # board = [1, 0, -1, 0, -1]
+    # action = Action()
+    # action.x = 10
+    # action.y = 20
+    # x, y = step(action)
+    # print(x, y)
+    board = [1, 0, -1, 0, -1]
     # s = [_equals1(x) for x in board]
     # t = [_equals1(-1 * x) for x in board]
     # s.extend(t)
     # print(s)
+    print(len(board))
