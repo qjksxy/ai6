@@ -47,9 +47,16 @@ no_gui = True
 # 定义画布
 canvas = tk.Canvas(top, height=MAP_SIZE * PIX_SIZE, width=MAP_SIZE * PIX_SIZE, bg ="gray")
 
+def set_gui(value):
+    global no_gui
+    if value == True:
+        no_gui = False
+        canvas_init()
+    else:
+        no_gui = True
+
 def canvas_init():
-    global canvas, no_gui
-    no_gui = False
+    global canvas
     canvas.pack(pady=10)
     for i in range(MAP_SIZE):
         canvas.create_line(i * PIX_SIZE, 0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, fill='black')
@@ -62,6 +69,7 @@ def canvas_init():
     add_btn('自动走1次', auto_play_once_btn)
     add_btn('开始游戏/重新开始', start_game_btn)
     canvas.bind("<Button-1>", touch_canvas)
+    canvas.bind("<Button-3>", auto_play_once_btn)
 
 def get_board(x, y):
     return board[y * MAP_SIZE + x]
@@ -425,7 +433,7 @@ def re_auto_play():
         auto_play -= 1
 
 # 添加按钮  -- AI 进入下棋
-def auto_play_once_btn():
+def auto_play_once_btn(event):
     i = 0
     res = CANT_CHESS
     while i < 20 and res == CANT_CHESS:
@@ -455,5 +463,5 @@ def add_btn(_text, _command):
     button.pack()
 
 if __name__ == '__main__':
-    canvas_init()
+    set_gui(True)
     show_windows()
