@@ -61,47 +61,6 @@ def print_status(show_detial):
         print('chessable :', chessable)
 
 
-def add_btn(_text, _command):
-    button = tk.Button(top, text=_text, command=_command)
-    button.pack()
-
-
-def canvas_init():
-    global canvas
-    canvas.pack(pady=10)
-    for i in range(MAP_SIZE):
-        canvas.create_line(i * PIX_SIZE, 0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, fill='black')
-        canvas.create_line(0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, i * PIX_SIZE, fill='black')
-    for i in range(MAP_SIZE * MAP_SIZE):
-        board.append(BLANK)
-        chessable.append(NOCHESSABLE)
-    add_btn('自动训练', re_auto_play)
-    add_btn('自动走1次', auto_play_once_btn)
-    add_btn('开始游戏/重新开始', start_game_btn)
-    canvas.bind("<Button-1>", touch_canvas)
-    canvas.bind("<Button-3>", auto_play_once_btn)
-
-
-def set_gui(value):
-    global no_gui
-    if value == True:
-        no_gui = False
-        canvas_init()
-    else:
-        no_gui = True
-
-
-def get_board(x, y):
-    return board[y * MAP_SIZE + x]
-
-
-def get_board_safe(x, y):
-    if x < 0 or y < 0 or x >= MAP_SIZE or y >= MAP_SIZE:
-        return BLANK
-    else:
-        return get_board(x, y)
-
-
 def set_board(x, y, value):
     global board
     board[y * MAP_SIZE + x] = value
@@ -119,66 +78,15 @@ def set_chessable(x, y):
     chessable[y * MAP_SIZE + x] = NOCHESSABLE
 
 
-def get_chessable(x, y):
+def get_board(x, y):
+    return board[y * MAP_SIZE + x]
+
+
+def get_board_safe(x, y):
     if x < 0 or y < 0 or x >= MAP_SIZE or y >= MAP_SIZE:
-        return NOCHESSABLE
-    return chessable[y * MAP_SIZE + x]
-
-
-def board_init():
-    global game_is_over, is_turn_black, turn_counter, chesses_count
-    if not no_gui:
-        for child in child_map:
-            canvas.delete(child)
-    child_map.clear()
-    chesses_count = 0
-    turn_counter = 0
-    game_is_over = False
-    is_turn_black = True
-    for i in range(MAP_SIZE * MAP_SIZE):
-        board[i] = BLANK
-    # 下第一子
-    chess(MAP_SIZE // 2, MAP_SIZE // 2, 0)
-    is_turn_black = False
-    turn_counter = 0
-
-
-def touch_canvas(event):
-    global is_turn_black, turn_counter
-    # 获取 x y 坐标
-    x = event.x // PIX_SIZE
-    y = event.y // PIX_SIZE
-    if x >= MAP_SIZE or y >= MAP_SIZE or get_board(x, y) != BLANK:
-        return
-    chess(x, y, 0)
-
-
-def chess(x, y, score):
-    global is_turn_black, chesses_count
-    global turn_counter
-    if game_is_over or get_board(x, y) != BLANK:
-        return CANT_CHESS
-    if is_turn_black:
-        fill_color = 'black'
-        set_board(x, y, BLACK)
+        return BLANK
     else:
-        fill_color = 'white'
-        set_board(x, y, WHITE)
-    if not no_gui:
-        child = canvas.create_oval(x * PIX_SIZE,
-                                   y * PIX_SIZE,
-                                   x * PIX_SIZE + PIX_SIZE,
-                                   y * PIX_SIZE + PIX_SIZE, fill=fill_color)
-        child_map.append(child)
-    chesses_count += 1
-    set_chessable(x, y)
-    # 连下两子交换颜色
-    if turn_counter < 1:
-        turn_counter = turn_counter + 1
-    else:
-        is_turn_black = not is_turn_black
-        turn_counter = 0
-    return judge_result(x, y)
+        return get_board(x, y)
 
 
 def win(flag):
@@ -249,19 +157,99 @@ def judge_result(x, y):
     return 0
 
 
-def _equals1(x):
-    if x == 1:
-        return 1
+def chess(x, y, score):
+    global is_turn_black, chesses_count
+    global turn_counter
+    if game_is_over or get_board(x, y) != BLANK:
+        return CANT_CHESS
+    if is_turn_black:
+        fill_color = 'black'
+        set_board(x, y, BLACK)
     else:
-        return 0
+        fill_color = 'white'
+        set_board(x, y, WHITE)
+    if not no_gui:
+        child = canvas.create_oval(x * PIX_SIZE,
+                                   y * PIX_SIZE,
+                                   x * PIX_SIZE + PIX_SIZE,
+                                   y * PIX_SIZE + PIX_SIZE, fill=fill_color)
+        child_map.append(child)
+    chesses_count += 1
+    set_chessable(x, y)
+    # 连下两子交换颜色
+    if turn_counter < 1:
+        turn_counter = turn_counter + 1
+    else:
+        is_turn_black = not is_turn_black
+        turn_counter = 0
+    return judge_result(x, y)
 
 
-def get_state():
-    me = [_equals1(x) for x in board]
-    co = [_equals1(-1 * x) for x in board]
-    me.extend(co)
-    me.extend(chessable)
-    return me
+def touch_canvas(event):
+    global is_turn_black, turn_counter
+    # 获取 x y 坐标
+    x = event.x // PIX_SIZE
+    y = event.y // PIX_SIZE
+    if x >= MAP_SIZE or y >= MAP_SIZE or get_board(x, y) != BLANK:
+        return
+    chess(x, y, 0)
+
+
+def board_init():
+    global game_is_over, is_turn_black, turn_counter, chesses_count
+    if not no_gui:
+        for child in child_map:
+            canvas.delete(child)
+    child_map.clear()
+    chesses_count = 0
+    turn_counter = 0
+    game_is_over = False
+    is_turn_black = True
+    for i in range(MAP_SIZE * MAP_SIZE):
+        board[i] = BLANK
+    # 下第一子
+    chess(MAP_SIZE // 2, MAP_SIZE // 2, 0)
+    is_turn_black = False
+    turn_counter = 0
+
+
+# 添加按钮  -- 开始游戏
+def start_game_btn():
+    board_init()
+
+
+def get_chessable(x, y):
+    if x < 0 or y < 0 or x >= MAP_SIZE or y >= MAP_SIZE:
+        return NOCHESSABLE
+    return chessable[y * MAP_SIZE + x]
+
+
+# 添加按钮  -- AI 进入下棋
+def auto_play_once_btn(event):
+    i = 0
+    res = CANT_CHESS
+    while i < 20 and res == CANT_CHESS:
+        x = random.randint(0, MAP_SIZE - 1)
+        y = random.randint(0, MAP_SIZE - 1)
+        if get_chessable(x, y) == NOCHESSABLE:
+            continue
+        res = chess(x, y, 0)
+        i += 1
+    if res == CANT_CHESS:
+        return ERROR
+    else:
+        return SUCCESS
+
+
+# 添加按钮
+def re_auto_play():
+    auto_play = 10
+    board_init()
+    while auto_play > 0:
+        print('auto_play: ' + str(auto_play))
+        while not game_is_over:
+            auto_play_once_btn()
+        auto_play -= 1
 
 
 def check_reward(chess_list):
@@ -446,6 +434,21 @@ def reward(camp):
     return reward
 
 
+def _equals1(x):
+    if x == 1:
+        return 1
+    else:
+        return 0
+
+
+def get_state():
+    me = [_equals1(x) for x in board]
+    co = [_equals1(-1 * x) for x in board]
+    me.extend(co)
+    me.extend(chessable)
+    return me
+
+
 def computer_step(x, y, camp):
     # param:
     # - x, y: 落子位置;
@@ -460,37 +463,34 @@ def computer_step(x, y, camp):
     return get_state(), reward(camp) - reward(c), game_is_over
 
 
-# 添加按钮
-def re_auto_play():
-    auto_play = 10
-    board_init()
-    while auto_play > 0:
-        print('auto_play: ' + str(auto_play))
-        while not game_is_over:
-            auto_play_once_btn()
-        auto_play -= 1
+def add_btn(_text, _command):
+    button = tk.Button(top, text=_text, command=_command)
+    button.pack()
 
 
-# 添加按钮  -- AI 进入下棋
-def auto_play_once_btn(event):
-    i = 0
-    res = CANT_CHESS
-    while i < 20 and res == CANT_CHESS:
-        x = random.randint(0, MAP_SIZE - 1)
-        y = random.randint(0, MAP_SIZE - 1)
-        if get_chessable(x, y) == NOCHESSABLE:
-            continue
-        res = chess(x, y, 0)
-        i += 1
-    if res == CANT_CHESS:
-        return ERROR
+def canvas_init():
+    global canvas
+    canvas.pack(pady=10)
+    for i in range(MAP_SIZE):
+        canvas.create_line(i * PIX_SIZE, 0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, fill='black')
+        canvas.create_line(0, i * PIX_SIZE, MAP_SIZE * PIX_SIZE, i * PIX_SIZE, fill='black')
+    for i in range(MAP_SIZE * MAP_SIZE):
+        board.append(BLANK)
+        chessable.append(NOCHESSABLE)
+    add_btn('自动训练', re_auto_play)
+    add_btn('自动走1次', auto_play_once_btn)
+    add_btn('开始游戏/重新开始', start_game_btn)
+    canvas.bind("<Button-1>", touch_canvas)
+    canvas.bind("<Button-3>", auto_play_once_btn)
+
+
+def set_gui(value):
+    global no_gui
+    if value == True:
+        no_gui = False
+        canvas_init()
     else:
-        return SUCCESS
-
-
-# 添加按钮  -- 开始游戏
-def start_game_btn():
-    board_init()
+        no_gui = True
 
 
 # 显示游戏窗口
