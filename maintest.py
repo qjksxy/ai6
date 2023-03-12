@@ -30,4 +30,5 @@ if __name__ == '__main__':
     # t = [_equals1(-1 * x) for x in board]
     # s.extend(t)
     # print(s)
+    print(len(board), len(board))
     print(len(board))
