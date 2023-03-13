@@ -252,35 +252,61 @@ def re_auto_play():
         auto_play -= 1
 
 
+def ju(mod, count, sc):
+    if count >= 6:
+        print('l6')
+    if count == 5:
+        if mod == 's':
+            print('s5')
+        if mod == 'd':
+            print('d5')
+    if count == 4:
+        if mod == 's':
+            print('s4')
+        if mod == 'd':
+            print('d4')
+    if count == 3:
+        if mod == 's':
+            print('s3')
+        if mod == 'd':
+            print('d3')
+    if count == 2:
+        if mod == 's':
+            print('s2')
+        if mod == 'd':
+            print('d2')
+    return sc
+
+
 def check_reward(chess_list):
-    rew = 0
     l = len(chess_list)
-    head, tail = 0, l
+    sc = 0
+    count = 0
+    i = 0
     for i in range(l):
-        if chess_list[i] == BLANK:
-            head = i
+        if chess_list[i] == 1:
+            count += 1
+        if chess_list[i] == 0:
             break
+    sc = ju('s', count, sc)
+    if chess_list[i] == 1:
+        return sc
+    count = 0
+    for j in range(i, l):
+        if chess_list[j] == 1:
+            count += 1
+        if chess_list[j] == 0:
+            sc = ju('d', count, sc)
+            count = 0
+    count = 0
     for i in range(l):
-        if chess_list[l - 1 - i] == BLANK:
-            tail = i
+        x = l - i - 1
+        if chess_list[x] == 1:
+            count += 1
+        if chess_list[x] == 0:
             break
-    if head == 4:
-        rew += SING4
-    if head == 5:
-        rew += SING5
-    if tail == 4:
-        rew += SING4
-    if tail == 5:
-        rew += SING5
-    tail = l - 1 - tail
-    if head < tail:
-        count = 0
-        for i in range(head, tail):
-            if chess_list[i] == 1:
-                count += 1
-            if chess_list[i] == BLANK:
-                pass
-    return rew
+    sc = ju('s', count, sc)
+    return sc
 
 
 def reward(camp):
