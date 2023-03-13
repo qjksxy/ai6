@@ -79,6 +79,7 @@ def set_chessable(x, y):
 
 
 def get_board(x, y):
+    # print(x, y)
     return board[y * MAP_SIZE + x]
 
 
@@ -162,12 +163,15 @@ def chess(x, y, score):
     global turn_counter
     if game_is_over or get_board(x, y) != BLANK:
         return CANT_CHESS
+    player = 0
     if is_turn_black:
         fill_color = 'black'
         set_board(x, y, BLACK)
+        player = BLACK
     else:
         fill_color = 'white'
         set_board(x, y, WHITE)
+        player = WHITE
     if not no_gui:
         child = canvas.create_oval(x * PIX_SIZE,
                                    y * PIX_SIZE,
@@ -176,6 +180,7 @@ def chess(x, y, score):
         child_map.append(child)
     chesses_count += 1
     set_chessable(x, y)
+    print('reward:', reward(player))
     # 连下两子交换颜色
     if turn_counter < 1:
         turn_counter = turn_counter + 1
@@ -252,7 +257,7 @@ def re_auto_play():
         auto_play -= 1
 
 
-def ju(mod, count, sc):
+def _add_reward(mod, count, sc):
     if count >= 6:
         print('l6')
     if count == 5:
@@ -279,6 +284,7 @@ def ju(mod, count, sc):
 
 
 def check_reward(chess_list):
+    print(chess_list)
     l = len(chess_list)
     sc = 0
     count = 0
@@ -288,7 +294,7 @@ def check_reward(chess_list):
             count += 1
         if chess_list[i] == 0:
             break
-    sc = ju('s', count, sc)
+    sc = _add_reward('s', count, sc)
     if chess_list[i] == 1:
         return sc
     count = 0
@@ -296,7 +302,7 @@ def check_reward(chess_list):
         if chess_list[j] == 1:
             count += 1
         if chess_list[j] == 0:
-            sc = ju('d', count, sc)
+            sc = _add_reward('d', count, sc)
             count = 0
     count = 0
     for i in range(l):
@@ -305,7 +311,7 @@ def check_reward(chess_list):
             count += 1
         if chess_list[x] == 0:
             break
-    sc = ju('s', count, sc)
+    sc = _add_reward('s', count, sc)
     return sc
 
 
@@ -313,7 +319,7 @@ def reward(camp):
     # TODO 检查此处的 get_board 调用是否应该替换为 get_board_safe 方法
     player1 = camp
     player2 = 1 - camp
-    reward = 0
+    _reward = 0
     if camp == WHITE:
         player2 = BLACK
     else:
@@ -323,27 +329,31 @@ def reward(camp):
     tail = -1
     # 检查所有横行
     for j in range(MAP_SIZE):
+        head = -1
+        tail = -1
         for i in range(MAP_SIZE):
             if get_board(j, i) == player2:
                 tail = i
-                if tail - head + 1 < WIN_SET:
+                if tail - head - 1 < WIN_SET:
                     head = tail
                     continue
                 else:
                     # 从 board[j][head] 到 board[j][tail] 检查奖励布局
                     l = []
-                    for m in range(head + 1, tail - 1):
+                    for m in range(head + 1, tail):
                         l.append(get_board(j, m) * player1)
-                    reward += check_reward(l)
-        if MAP_SIZE - tail + 1 < WIN_SET:
+                    _reward += check_reward(l)
+                    head = tail
+        if MAP_SIZE - tail - 1 < WIN_SET:
             continue
         else:
             # 从 board[j][tail] 到 board[j][MAP_SIZE] 检查奖励布局
             l = []
-            for m in range(tail + 1, MAP_SIZE - 1):
+            for m in range(tail + 1, MAP_SIZE):
                 l.append(get_board(j, m) * player1)
-            reward += check_reward(l)
+            _reward += check_reward(l)
     # 检查所有竖列
+    '''
     head, tail = -1, -1
     for j in range(MAP_SIZE):
         for i in range(MAP_SIZE):
@@ -357,7 +367,7 @@ def reward(camp):
                     l = []
                     for m in range(head + 1, tail - 1):
                         l.append(get_board(m, j) * player1)
-                    reward += check_reward(l)
+                    _reward += check_reward(l)
         if MAP_SIZE - tail + 1 < WIN_SET:
             continue
         else:
@@ -365,7 +375,9 @@ def reward(camp):
             l = []
             for m in range(tail + 1, MAP_SIZE - 1):
                 l.append(get_board(m, j) * player1)
-            reward += check_reward(l)
+            _reward += check_reward(l)
+    '''
+    '''
     # 检查所有左上-右下斜线
     # 右上部分棋盘
     head, tail = -1, -1
@@ -381,14 +393,14 @@ def reward(camp):
                     l = []
                     for m in range(head + 1, tail - 1):
                         l.append(get_board(j + m, m) * player1)
-                    reward += check_reward(l)
+                    _reward += check_reward(l)
         if MAP_SIZE - j - tail + 1 < WIN_SET:
             continue
         else:
             l = []
             for m in range(tail + 1, MAP_SIZE - 1):
                 l.append(get_board(j + m, m) * player1)
-            reward += check_reward(l)
+            _reward += check_reward(l)
     # 检查左下部分棋盘
     head, tail = -1, -1
     for j in range(MAP_SIZE):
@@ -403,14 +415,14 @@ def reward(camp):
                     l = []
                     for m in range(head + 1, tail - 1):
                         l.append(get_board(m, j + m) * player1)
-                    reward += check_reward(l)
+                    _reward += check_reward(l)
         if MAP_SIZE - j - tail + 1 < WIN_SET:
             continue
         else:
             l = []
             for m in range(tail + 1, MAP_SIZE - 1):
                 l.append(get_board(m, j + m) * player1)
-            reward += check_reward(l)
+            _reward += check_reward(l)
     # 检查所有右上-左下斜线
     # 检查左上部分棋盘
     head, tail = -1, -1
@@ -426,14 +438,14 @@ def reward(camp):
                     l = []
                     for m in range(head + 1, tail - 1):
                         l.append(get_board(j - m, m) * player1)
-                    reward += check_reward(l)
+                    _reward += check_reward(l)
         if MAP_SIZE - j - tail + 1 < WIN_SET:
             continue
         else:
             l = []
             for m in range(tail + 1, MAP_SIZE - 1):
                 l.append(get_board(j - m, m) * player1)
-            reward += check_reward(l)
+            _reward += check_reward(l)
     # 检查右下部分棋盘
     head, tail = -1, -1
     for j in range(MAP_SIZE):
@@ -448,16 +460,16 @@ def reward(camp):
                     l = []
                     for m in range(head + 1, tail - 1):
                         l.append(get_board(MAP_SIZE - m - 1, j + m) * player1)
-                    reward += check_reward(l)
+                    _reward += check_reward(l)
         if MAP_SIZE - j - tail + 1 < WIN_SET:
             continue
         else:
             l = []
             for m in range(tail + 1, MAP_SIZE - 1):
                 l.append(get_board(MAP_SIZE - m - 1, j + m) * player1)
-            reward += check_reward(l)
-
-    return reward
+            _reward += check_reward(l)
+    '''
+    return _reward
 
 
 def _equals1(x):
