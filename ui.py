@@ -79,7 +79,8 @@ def set_chessable(x, y):
 
 
 def get_board(x, y):
-    # print(x, y)
+    if x < 0 or y < 0 or x >= MAP_SIZE or y >= MAP_SIZE:
+        print('Error: in get_board: x:', x, ', y:', y)
     return board[y * MAP_SIZE + x]
 
 
@@ -328,6 +329,7 @@ def reward(camp):
     head = -1
     tail = -1
     # 检查所有横行
+    '''
     for j in range(MAP_SIZE):
         head = -1
         tail = -1
@@ -352,31 +354,31 @@ def reward(camp):
             for m in range(tail + 1, MAP_SIZE):
                 l.append(get_board(j, m) * player1)
             _reward += check_reward(l)
-    # 检查所有竖列
     '''
-    head, tail = -1, -1
+    # 检查所有竖列
     for j in range(MAP_SIZE):
+        head, tail = -1, -1
         for i in range(MAP_SIZE):
             if get_board(i, j) == player2:
                 tail = i
-                if tail - head + 1 < WIN_SET:
+                if tail - head - 1 < WIN_SET:
                     head = tail
                     continue
                 else:
                     # 从 board[head][j] 到 board[tail][j] 检查奖励布局
                     l = []
-                    for m in range(head + 1, tail - 1):
+                    for m in range(head + 1, tail):
                         l.append(get_board(m, j) * player1)
                     _reward += check_reward(l)
-        if MAP_SIZE - tail + 1 < WIN_SET:
+                    head = tail
+        if MAP_SIZE - tail - 1 < WIN_SET:
             continue
         else:
             # 从 board[tail][j] 到 board[MAP_SIZE][j] 检查奖励布局
             l = []
-            for m in range(tail + 1, MAP_SIZE - 1):
+            for m in range(tail + 1, MAP_SIZE):
                 l.append(get_board(m, j) * player1)
             _reward += check_reward(l)
-    '''
     '''
     # 检查所有左上-右下斜线
     # 右上部分棋盘
